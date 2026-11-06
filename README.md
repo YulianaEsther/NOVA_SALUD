@@ -18,6 +18,13 @@ Base inicial de la aplicación PHP con MVC, PDO y Tailwind CSS.
 La conexión PDO se inicializa al llamar `App\\Core\\Database::connection()`; no se conecta a la base durante la página inicial.
 En desarrollo se puede activar `APP_DEBUG=true`. Antes de publicar, establece `APP_ENV=production` y `APP_DEBUG=false`.
 
+## Base de datos
+
+1. En phpMyAdmin crea la base `nova_salud` con cotejamiento `utf8mb4_unicode_ci` (o usa el nombre configurado en `DB_NAME`).
+2. Selecciona esa base, abre la pestaña **Importar** y carga `database/nova_salud.sql`.
+3. El archivo crea tablas y la vista inicial; no crea usuarios ni contraseñas predeterminados.
+4. Las compras y ventas deben actualizar saldo de lote, encabezado/detalle y movimiento dentro de una sola transacción PDO.
+
 ## Estructura
 
 - `app/`: controladores, modelos, vistas y componentes MVC.
