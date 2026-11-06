@@ -19,6 +19,7 @@ $cssUrl = $baseUrl . '/assets/css/app.css';
             </a>
             <nav aria-label="Navegación principal">
                 <a class="rounded-lg px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100" href="<?= e($baseUrl) ?>/productos">Productos</a>
+                <a class="rounded-lg px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100" href="<?= e($baseUrl) ?>/categorias">Categorías</a>
             </nav>
         </div>
     </header>

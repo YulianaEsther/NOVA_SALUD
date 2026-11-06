@@ -32,6 +32,12 @@ En desarrollo se puede activar `APP_DEBUG=true`. Antes de publicar, establece `A
 - El botón **Desactivar** aplica borrado lógico para preservar el historial.
 - El módulo todavía requiere autenticación y permisos antes de exponerse fuera del entorno local.
 
+## Módulo de categorías
+
+- Abre `http://nova-salud.local/categorias` (o la URL configurada en `APP_URL`).
+- Permite registrar, consultar, buscar, editar, desactivar y reactivar categorías.
+- La desactivación es lógica; conserva los productos asociados y la categoría puede reactivarse.
+
 ## Estructura
 
 - `app/`: controladores, modelos, vistas y componentes MVC.
