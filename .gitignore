@@ -4,3 +4,4 @@
 /storage/uploads/*
 !/storage/uploads/.gitkeep
 !/storage/logs/.gitkeep
+node_modules/

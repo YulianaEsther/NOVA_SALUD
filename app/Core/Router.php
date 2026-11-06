@@ -3,8 +3,6 @@ declare(strict_types=1);
 
 namespace App\Core;
 
-use RuntimeException;
-
 final class Router
 {
     /** @var array<string, array<string, callable>> */
@@ -13,6 +11,11 @@ final class Router
     public function get(string $path, callable $handler): void
     {
         $this->routes['GET'][$this->normalize($path)] = $handler;
+    }
+
+    public function post(string $path, callable $handler): void
+    {
+        $this->routes['POST'][$this->normalize($path)] = $handler;
     }
 
     public function dispatch(string $method, string $uri): void

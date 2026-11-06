@@ -25,6 +25,13 @@ En desarrollo se puede activar `APP_DEBUG=true`. Antes de publicar, establece `A
 3. El archivo crea tablas y la vista inicial; no crea usuarios ni contraseñas predeterminados.
 4. Las compras y ventas deben actualizar saldo de lote, encabezado/detalle y movimiento dentro de una sola transacción PDO.
 
+## Módulo de productos
+
+- Abre `http://nova-salud.local/productos` (o la URL configurada en `APP_URL`).
+- Para registrar un producto debe existir al menos una categoría activa; puedes registrar las categorías confirmadas por el negocio en phpMyAdmin, tabla `categorias`.
+- El botón **Desactivar** aplica borrado lógico para preservar el historial.
+- El módulo todavía requiere autenticación y permisos antes de exponerse fuera del entorno local.
+
 ## Estructura
 
 - `app/`: controladores, modelos, vistas y componentes MVC.
