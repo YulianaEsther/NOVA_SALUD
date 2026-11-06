@@ -1,0 +1,7 @@
+Options -Indexes
+RewriteEngine On
+
+# Let Apache serve existing files directly; send other requests to the front controller.
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^ index.php [QSA,L]
