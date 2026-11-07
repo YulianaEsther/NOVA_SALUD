@@ -22,21 +22,33 @@ En desarrollo se puede activar `APP_DEBUG=true`. Antes de publicar, establece `A
 
 1. En phpMyAdmin crea la base `nova_salud` con cotejamiento `utf8mb4_unicode_ci` (o usa el nombre configurado en `DB_NAME`).
 2. Selecciona esa base, abre la pestaña **Importar** y carga `database/nova_salud.sql`.
-3. El archivo crea tablas y la vista inicial; no crea usuarios ni contraseñas predeterminados.
-4. Las compras y ventas deben actualizar saldo de lote, encabezado/detalle y movimiento dentro de una sola transacción PDO.
+3. Importa también `database/permissions_seed.sql`. Crea el catálogo de permisos y el rol Administrador, pero no genera credenciales.
+4. Si la base ya existía antes de añadir autenticación, importa `database/auth_migration.sql` para crear la tabla de intentos de acceso.
+5. Abre `/configuracion/inicial` y crea el primer usuario administrador con una contraseña propia de al menos 12 caracteres. El asistente se cierra después de crear el primer usuario.
+6. Las compras y ventas deben actualizar saldo de lote, encabezado/detalle y movimiento dentro de una sola transacción PDO.
 
 ## Módulo de productos
 
 - Abre `http://nova-salud.local/productos` (o la URL configurada en `APP_URL`).
 - Para registrar un producto debe existir al menos una categoría activa; puedes registrar las categorías confirmadas por el negocio en phpMyAdmin, tabla `categorias`.
 - El botón **Desactivar** aplica borrado lógico para preservar el historial.
-- El módulo todavía requiere autenticación y permisos antes de exponerse fuera del entorno local.
+- El acceso y las acciones están protegidos por permisos asignados al rol del usuario.
 
 ## Módulo de categorías
 
 - Abre `http://nova-salud.local/categorias` (o la URL configurada en `APP_URL`).
 - Permite registrar, consultar, buscar, editar, desactivar y reactivar categorías.
 - La desactivación es lógica; conserva los productos asociados y la categoría puede reactivarse.
+
+## Otros módulos administrativos
+
+- `/clientes`, `/proveedores`, `/marcas`, `/usuarios` y `/roles` permiten crear, consultar, editar y activar/desactivar registros.
+- `/lotes` permite registrar lotes vinculados a un producto y compra, consultar sus existencias y editar sus datos. Un lote se crea con saldo cero; las existencias se registran por compras. Solo se elimina si no tiene saldo ni relaciones de inventario.
+- Las contraseñas nuevas o modificadas se almacenan con `password_hash()`; en edición, dejar la contraseña vacía conserva la existente.
+- Los roles permiten guardar nombre, descripción y permisos asignados.
+- La autenticación, la asignación de permisos y la autorización por rol protegen las rutas administrativas.
+- El sistema bloquea por 15 minutos el acceso de una combinación usuario/IP tras cinco contraseñas incorrectas.
+- Las sesiones se regeneran al autenticar y caducan tras 30 minutos sin actividad.
 
 ## Estructura
 

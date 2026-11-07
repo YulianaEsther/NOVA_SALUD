@@ -32,3 +32,8 @@ function flash(string $key, ?string $message = null): ?string
     unset($_SESSION['_flash'][$key]);
     return is_string($value) ? $value : null;
 }
+
+function can(string $permission): bool
+{
+    return in_array($permission, $_SESSION['permissions'] ?? [], true);
+}

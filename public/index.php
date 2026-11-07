@@ -2,6 +2,7 @@
 declare(strict_types=1);
 
 use App\Core\Router;
+use App\Middleware\AuthMiddleware;
 
 define('BASE_PATH', dirname(__DIR__));
 require BASE_PATH . '/app/Helpers/env.php';
@@ -9,6 +10,8 @@ require BASE_PATH . '/app/Helpers/view.php';
 load_environment(BASE_PATH . '/.env');
 
 if (session_status() !== PHP_SESSION_ACTIVE) {
+    ini_set('session.use_strict_mode', '1');
+    ini_set('session.use_only_cookies', '1');
     session_set_cookie_params([
         'httponly' => true,
         'secure' => !empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off',
@@ -55,4 +58,8 @@ set_exception_handler(static function (Throwable $exception) use ($app): void {
 $router = new Router();
 $registerRoutes = require BASE_PATH . '/routes/web.php';
 $registerRoutes($router);
+$auth = new AuthMiddleware();
+if (!$auth->handle($_SERVER['REQUEST_METHOD'] ?? 'GET', $_SERVER['REQUEST_URI'] ?? '/')) {
+    exit;
+}
 $router->dispatch($_SERVER['REQUEST_METHOD'] ?? 'GET', $_SERVER['REQUEST_URI'] ?? '/');

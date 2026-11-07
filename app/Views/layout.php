@@ -18,9 +18,17 @@ $cssUrl = $baseUrl . '/assets/css/app.css';
                 <?= e($app['name'] ?? 'NOVA SALUD') ?>
             </a>
             <nav aria-label="Navegación principal">
-                <a class="rounded-lg px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100" href="<?= e($baseUrl) ?>/productos">Productos</a>
-                <a class="rounded-lg px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100" href="<?= e($baseUrl) ?>/categorias">Categorías</a>
+                <?php foreach (['productos' => 'Productos', 'categorias' => 'Categorías', 'clientes' => 'Clientes', 'proveedores' => 'Proveedores', 'marcas' => 'Marcas', 'lotes' => 'Lotes', 'usuarios' => 'Usuarios', 'roles' => 'Roles'] as $module => $label): ?>
+                    <?php if (can($module . '.ver')): ?><a class="rounded-lg px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100" href="<?= e($baseUrl) ?>/<?= e($module) ?>"><?= e($label) ?></a><?php endif; ?>
+                <?php endforeach; ?>
             </nav>
+            <div class="flex items-center gap-3">
+                <span class="hidden text-sm text-slate-600 sm:inline"><?= e($_SESSION['auth_name'] ?? '') ?></span>
+                <form method="post" action="<?= e($baseUrl) ?>/logout">
+                    <input type="hidden" name="_csrf" value="<?= e(csrf_token()) ?>">
+                    <button class="rounded-lg border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">Cerrar sesión</button>
+                </form>
+            </div>
         </div>
     </header>
     <main class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
