@@ -8,20 +8,26 @@ use PDO;
 
 final class AuthMiddleware
 {
-    public function handle(string $method, string $uri): bool
+    public function handle(string $method, string $uri, bool $routeExists = true): bool
     {
         $path = parse_url($uri, PHP_URL_PATH) ?: '/';
         if (in_array($path, ['/login', '/configuracion/inicial'], true)) {
             return true;
         }
 
+        if (!$routeExists) {
+            unset($_SESSION['intended_path']);
+            if (!empty($_SESSION['auth_user_id'])) {
+                $this->clearAuthentication();
+            }
+            $this->redirectToLogin('pagina');
+            return false;
+        }
+
         $userId = filter_var($_SESSION['auth_user_id'] ?? null, FILTER_VALIDATE_INT);
         if ($userId === false || $userId === null || $userId < 1) {
-            $query = parse_url($uri, PHP_URL_QUERY);
-            $_SESSION['intended_path'] = strtoupper($method) === 'GET'
-                ? $path . (is_string($query) && $query !== '' ? '?' . $query : '')
-                : '/';
-            header('Location: ' . $this->baseUrl() . '/login', true, 303);
+            unset($_SESSION['intended_path']);
+            $this->redirectToLogin();
             return false;
         }
         $lastActivity = (int) ($_SESSION['auth_last_activity'] ?? 0);
@@ -47,10 +53,12 @@ final class AuthMiddleware
 
         $permissionQuery = $db->prepare(
             'SELECT p.codigo FROM permisos p
-             INNER JOIN rol_permisos rp ON rp.permiso_id = p.id
-             WHERE rp.rol_id = :role_id'
+             LEFT JOIN rol_permisos rp ON rp.permiso_id = p.id AND rp.rol_id = :role_id
+             LEFT JOIN usuario_permisos up ON up.permiso_id = p.id AND up.usuario_id = :user_id
+             WHERE (up.usuario_id IS NOT NULL AND up.permitido = 1)
+                OR (up.usuario_id IS NULL AND rp.permiso_id IS NOT NULL)'
         );
-        $permissionQuery->execute(['role_id' => $user['rol_id']]);
+        $permissionQuery->execute(['role_id' => $user['rol_id'], 'user_id' => $user['id']]);
         $permissions = array_column($permissionQuery->fetchAll(PDO::FETCH_ASSOC), 'codigo');
         $_SESSION['role_id'] = (int) $user['rol_id'];
         $_SESSION['auth_name'] = trim($user['nombres'] . ' ' . $user['apellidos']);
@@ -67,9 +75,8 @@ final class AuthMiddleware
         }
         foreach ($required as $permission) {
             if (!in_array($permission, $permissions, true)) {
-                http_response_code(403);
-                header('Content-Type: text/html; charset=UTF-8');
-                echo '<!doctype html><html lang="es"><meta charset="utf-8"><title>Acceso denegado</title><body><h1>Acceso denegado</h1><p>Tu rol no tiene permiso para esta operación.</p><a href="' . htmlspecialchars($this->baseUrl() . '/', ENT_QUOTES, 'UTF-8') . '">Volver al inicio</a></body></html>';
+                $this->clearAuthentication();
+                $this->redirectToLogin('permiso');
                 return false;
             }
         }
@@ -82,7 +89,7 @@ final class AuthMiddleware
         if ($path === '/') {
             return ['dashboard.ver'];
         }
-        $modules = ['productos', 'categorias', 'clientes', 'lotes', 'marcas', 'usuarios', 'roles', 'proveedores'];
+        $modules = ['productos', 'compras', 'categorias', 'clientes', 'lotes', 'marcas', 'usuarios', 'roles', 'proveedores'];
         $parts = explode('/', trim($path, '/'));
         $module = $parts[0] ?? '';
         if (!in_array($module, $modules, true)) {
@@ -92,6 +99,7 @@ final class AuthMiddleware
         if ($method === 'GET') {
             $permissionAction = match ($action) {
                 'nuevo', 'nueva', 'crear' => 'crear',
+                'detalle' => 'ver',
                 'editar' => 'editar',
                 default => 'ver',
             };
@@ -102,6 +110,7 @@ final class AuthMiddleware
                 'activar' => 'activar',
                 'desactivar' => 'desactivar',
                 'eliminar' => 'eliminar',
+                'anular' => 'anular',
                 default => 'ver',
             };
         }
@@ -116,6 +125,12 @@ final class AuthMiddleware
     {
         $app = require dirname(__DIR__, 2) . '/config/app.php';
         return rtrim((string) $app['url'], '/');
+    }
+
+    private function redirectToLogin(string $reason = ''): void
+    {
+        $query = $reason === '' ? '' : '?acceso=' . rawurlencode($reason);
+        header('Location: ' . $this->baseUrl() . '/login' . $query, true, 303);
     }
 
     private function clearAuthentication(): void

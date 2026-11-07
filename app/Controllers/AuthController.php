@@ -13,7 +13,12 @@ final class AuthController
         if (!empty($_SESSION['auth_user_id'])) {
             $this->redirect('/');
         }
-        $this->renderLogin(null, '');
+        $message = match ((string) ($_GET['acceso'] ?? '')) {
+            'permiso' => 'Tu sesión terminó porque tu cuenta no tiene permiso para esa página. Inicia sesión con una cuenta autorizada.',
+            'pagina' => 'La página solicitada no existe. Inicia sesión para continuar.',
+            default => null,
+        };
+        $this->renderLogin($message, '');
     }
 
     public function login(): void

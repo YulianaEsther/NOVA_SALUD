@@ -59,6 +59,10 @@ final class AdminResourcesController
                 $values['permission_ids'] = $model->rolePermissionIds($id);
                 continue;
             }
+            if ($field['type'] === 'user_permissions') {
+                $values['permission_ids'] = $model->effectiveUserPermissionIds($id);
+                continue;
+            }
             $values[$field['key']] = $field['type'] === 'password' ? '' : ($row[$column] ?? '');
         }
         $this->renderForm($slug, $definition, $values, []);
@@ -73,6 +77,8 @@ final class AdminResourcesController
         [$data, $values, $errors] = $this->validateInput($definition, false);
         $permissionIds = $this->validatePermissions($definition, $errors);
         if ($slug === 'roles') {
+            $values['permission_ids'] = $this->submittedPermissionIds();
+        } elseif ($slug === 'usuarios') {
             $values['permission_ids'] = $this->submittedPermissionIds();
         }
         if ($errors !== []) {
@@ -110,6 +116,8 @@ final class AdminResourcesController
         $permissionIds = $this->validatePermissions($definition, $errors);
         if ($slug === 'roles') {
             $values['permission_ids'] = $this->submittedPermissionIds();
+        } elseif ($slug === 'usuarios') {
+            $values['permission_ids'] = $this->submittedPermissionIds();
         }
         $values['id'] = $id;
         if ($errors !== []) {
@@ -118,7 +126,7 @@ final class AdminResourcesController
             return;
         }
         try {
-            $model->update($id, $data, $slug === 'roles' ? $permissionIds : null);
+            $model->update($id, $data, in_array($slug, ['roles', 'usuarios'], true) ? $permissionIds : null);
             \flash('success', $definition['title'] . ' actualizado correctamente.');
             $this->redirect('/' . $slug);
         } catch (PDOException $exception) {
@@ -195,7 +203,7 @@ final class AdminResourcesController
             if (isset($field['options'])) {
                 $definition['fields'][$index]['choices'] = $model->options($field['options']);
             }
-            if ($field['type'] === 'permissions') {
+            if (in_array($field['type'], ['permissions', 'user_permissions'], true)) {
                 $definition['fields'][$index]['choices'] = $model->permissionOptions();
             }
         }
@@ -217,7 +225,7 @@ final class AdminResourcesController
         $errors = [];
         foreach ($definition['fields'] as $field) {
             $key = $field['key'];
-            if ($field['type'] === 'permissions') {
+            if (in_array($field['type'], ['permissions', 'user_permissions'], true)) {
                 continue;
             }
             if ($editing && ($field['editable_on_update'] ?? true) === false) {
@@ -299,7 +307,7 @@ final class AdminResourcesController
     /** @param array<string, mixed> $definition @param array<string, string> $errors @return list<int> */
     private function validatePermissions(array $definition, array &$errors): array
     {
-        if ($definition['table'] !== 'roles') {
+        if (!in_array($definition['table'], ['roles', 'usuarios'], true)) {
             return [];
         }
         $submitted = $_POST['permission_ids'] ?? [];
@@ -309,7 +317,7 @@ final class AdminResourcesController
         }
         $allowed = (new AdminResource($definition))->permissionOptions();
         if ($allowed === []) {
-            $errors['permission_ids'] = 'No hay permisos disponibles. Importa database/permissions_seed.sql.';
+            $errors['permission_ids'] = 'No hay permisos disponibles. Ejecuta las migraciones de permisos.';
             return [];
         }
         $allowedIds = [];
@@ -332,15 +340,33 @@ final class AdminResourcesController
             }
             $ids[] = (int) $id;
         }
-        $targetRoleId = $this->requestId($_POST['id'] ?? null);
-        $currentRoleId = (int) ($_SESSION['role_id'] ?? 0);
-        if ($targetRoleId !== null && $targetRoleId === $currentRoleId) {
-            foreach (['roles.ver', 'roles.editar', 'roles.asignar_permisos'] as $requiredCode) {
+        $targetId = $this->requestId($_POST['id'] ?? null);
+        if ($definition['table'] === 'roles') {
+            $currentRoleId = (int) ($_SESSION['role_id'] ?? 0);
+            if ($targetId !== null && $targetId === $currentRoleId) {
+                foreach (['roles.ver', 'roles.editar', 'roles.asignar_permisos'] as $requiredCode) {
+                    $assignmentId = array_search($requiredCode, $codesById, true);
+                    if ($assignmentId !== false && !in_array((int) $assignmentId, $ids, true)) {
+                        $errors['permission_ids'] = 'Tu propio rol debe conservar los permisos de consulta, edición y asignación de roles.';
+                        break;
+                    }
+                }
+            }
+        } elseif ($targetId !== null && $targetId === (int) ($_SESSION['auth_user_id'] ?? 0)) {
+            foreach (['usuarios.ver', 'usuarios.editar', 'roles.asignar_permisos'] as $requiredCode) {
                 $assignmentId = array_search($requiredCode, $codesById, true);
                 if ($assignmentId !== false && !in_array((int) $assignmentId, $ids, true)) {
-                    $errors['permission_ids'] = 'Tu propio rol debe conservar los permisos de consulta, edición y asignación de roles.';
+                    $errors['permission_ids'] = 'Conserva en tu usuario los permisos para consultar y editar usuarios y asignar permisos.';
                     break;
                 }
+            }
+        }
+        if ($definition['table'] === 'usuarios' && $targetId !== null) {
+            $adminPermissionId = array_search('roles.asignar_permisos', $codesById, true);
+            if ($adminPermissionId !== false
+                && !in_array((int) $adminPermissionId, $ids, true)
+                && (new AdminResource($definition))->isLastActiveAdministrator($targetId)) {
+                $errors['permission_ids'] = 'No se puede quitar el permiso de administración al último administrador activo.';
             }
         }
         return array_values(array_unique($ids));

@@ -15,6 +15,7 @@ $title = ($editing ? 'Editar ' : 'Registrar ') . mb_strtolower($definition['titl
             <?php if ($editing): ?><input type="hidden" name="id" value="<?= e($values['id']) ?>"><?php endif; ?>
             <div class="grid gap-5 sm:grid-cols-2">
                 <?php foreach ($definition['fields'] as $field): ?>
+                    <?php if ($field['type'] === 'user_permissions' && !$editing) { continue; } ?>
                     <?php
                     $key = $field['key'];
                     $value = $values[$key] ?? '';
@@ -22,7 +23,7 @@ $title = ($editing ? 'Editar ' : 'Registrar ') . mb_strtolower($definition['titl
                     $disabled = $editing && ($field['editable_on_update'] ?? true) === false;
                     $borderClass = $fieldError ? 'border-red-400 focus:border-red-500 focus:ring-red-100' : 'border-slate-300 focus:border-emerald-600 focus:ring-emerald-100';
                     ?>
-                    <div class="<?= in_array($field['type'], ['textarea'], true) ? 'sm:col-span-2' : '' ?>">
+                    <div class="<?= in_array($field['type'], ['textarea', 'permissions', 'user_permissions'], true) ? 'sm:col-span-2' : '' ?>">
                         <label for="<?= e($key) ?>" class="mb-1.5 block text-sm font-semibold text-slate-700"><?= e($field['label']) ?> <?= ($field['required'] && !($editing && $field['type'] === 'password')) ? '<span class="text-red-600">*</span>' : '' ?></label>
                         <?php if ($field['type'] === 'select'): ?>
                             <select id="<?= e($key) ?>" name="<?= e($key) ?>" <?= $field['required'] && !$disabled ? 'required' : '' ?> <?= $disabled ? 'disabled' : '' ?> class="min-h-11 w-full rounded-lg border bg-white px-3 text-sm <?= e($borderClass) ?> focus:outline-none focus:ring-2">
@@ -31,8 +32,9 @@ $title = ($editing ? 'Editar ' : 'Registrar ') . mb_strtolower($definition['titl
                                     <option value="<?= e($choice['id']) ?>" <?= (string) $value === (string) $choice['id'] ? 'selected' : '' ?>><?= e($choice['nombre']) ?></option>
                                 <?php endforeach; ?>
                             </select>
-                        <?php elseif ($field['type'] === 'permissions'): ?>
+                        <?php elseif (in_array($field['type'], ['permissions', 'user_permissions'], true)): ?>
                             <?php $selectedPermissions = $values['permission_ids'] ?? []; ?>
+                            <?php if ($field['type'] === 'user_permissions'): ?><p class="mb-2 text-xs font-normal text-slate-600">Marcados = permiso concedido. Desmarcados = permiso quitado incluso si el rol lo concede. Los demás permisos se heredan del rol.</p><?php endif; ?>
                             <?php if (($field['choices'] ?? []) === []): ?>
                                 <p class="rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">No hay permisos cargados. Importa primero <code>database/permissions_seed.sql</code> desde phpMyAdmin.</p>
                             <?php else: ?>

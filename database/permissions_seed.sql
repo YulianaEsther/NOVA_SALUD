@@ -11,6 +11,9 @@ INSERT IGNORE INTO permisos (codigo, descripcion) VALUES
 ('roles.ver', 'Consultar roles'), ('roles.crear', 'Registrar roles'), ('roles.editar', 'Editar roles'), ('roles.activar', 'Activar roles'), ('roles.desactivar', 'Desactivar roles'), ('roles.asignar_permisos', 'Asignar permisos a roles'),
 ('proveedores.ver', 'Consultar proveedores'), ('proveedores.crear', 'Registrar proveedores'), ('proveedores.editar', 'Editar proveedores'), ('proveedores.activar', 'Activar proveedores'), ('proveedores.desactivar', 'Desactivar proveedores');
 
+INSERT IGNORE INTO permisos (codigo, descripcion) VALUES
+('compras.ver', 'Consultar compras'), ('compras.crear', 'Registrar compras'), ('compras.anular', 'Anular compras y revertir su stock');
+
 INSERT IGNORE INTO roles (nombre, descripcion, activo)
 VALUES ('Administrador', 'Rol inicial con acceso completo, ajusta sus permisos según la operación.', 1);
 

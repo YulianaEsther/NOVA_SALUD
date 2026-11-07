@@ -56,6 +56,7 @@ return [
             ['key' => 'email', 'label' => 'Correo electrónico', 'type' => 'email', 'required' => true, 'max' => 190],
             ['key' => 'usuario', 'label' => 'Nombre de usuario', 'type' => 'text', 'required' => true, 'max' => 80],
             ['key' => 'password', 'column' => 'password_hash', 'label' => 'Contraseña', 'type' => 'password', 'required' => true, 'max' => 128],
+            ['key' => 'user_permissions', 'label' => 'Permisos individuales', 'type' => 'user_permissions', 'required' => false],
         ],
     ],
     'lotes' => [

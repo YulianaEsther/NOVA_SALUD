@@ -18,7 +18,7 @@ $cssUrl = $baseUrl . '/assets/css/app.css';
                 <?= e($app['name'] ?? 'NOVA SALUD') ?>
             </a>
             <nav aria-label="Navegación principal">
-                <?php foreach (['productos' => 'Productos', 'categorias' => 'Categorías', 'clientes' => 'Clientes', 'proveedores' => 'Proveedores', 'marcas' => 'Marcas', 'lotes' => 'Lotes', 'usuarios' => 'Usuarios', 'roles' => 'Roles'] as $module => $label): ?>
+                <?php foreach (['productos' => 'Productos', 'compras' => 'Compras', 'categorias' => 'Categorías', 'clientes' => 'Clientes', 'proveedores' => 'Proveedores', 'marcas' => 'Marcas', 'lotes' => 'Lotes', 'usuarios' => 'Usuarios', 'roles' => 'Roles'] as $module => $label): ?>
                     <?php if (can($module . '.ver')): ?><a class="rounded-lg px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100" href="<?= e($baseUrl) ?>/<?= e($module) ?>"><?= e($label) ?></a><?php endif; ?>
                 <?php endforeach; ?>
             </nav>

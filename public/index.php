@@ -59,7 +59,9 @@ $router = new Router();
 $registerRoutes = require BASE_PATH . '/routes/web.php';
 $registerRoutes($router);
 $auth = new AuthMiddleware();
-if (!$auth->handle($_SERVER['REQUEST_METHOD'] ?? 'GET', $_SERVER['REQUEST_URI'] ?? '/')) {
+$requestMethod = $_SERVER['REQUEST_METHOD'] ?? 'GET';
+$requestUri = $_SERVER['REQUEST_URI'] ?? '/';
+if (!$auth->handle($requestMethod, $requestUri, $router->hasRoute($requestMethod, $requestUri))) {
     exit;
 }
 $router->dispatch($_SERVER['REQUEST_METHOD'] ?? 'GET', $_SERVER['REQUEST_URI'] ?? '/');

@@ -33,6 +33,12 @@ final class Router
         $handler();
     }
 
+    public function hasRoute(string $method, string $uri): bool
+    {
+        $path = parse_url($uri, PHP_URL_PATH) ?: '/';
+        return isset($this->routes[strtoupper($method)][$this->normalize($path)]);
+    }
+
     private function normalize(string $path): string
     {
         $normalized = '/' . trim($path, '/');

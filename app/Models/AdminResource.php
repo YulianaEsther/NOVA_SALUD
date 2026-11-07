@@ -101,11 +101,15 @@ final class AdminResource
     /** @param array<string, mixed> $data */
     public function update(int $id, array $data, ?array $permissionIds = null): bool
     {
-        if ($this->definition['table'] === 'roles') {
+        if (in_array($this->definition['table'], ['roles', 'usuarios'], true)) {
             $this->db->beginTransaction();
             try {
                 $this->updateRow($id, $data);
-                $this->syncRolePermissions($id, $permissionIds ?? []);
+                if ($this->definition['table'] === 'roles') {
+                    $this->syncRolePermissions($id, $permissionIds ?? []);
+                } else {
+                    $this->syncUserPermissions($id, $permissionIds ?? []);
+                }
                 $this->db->commit();
                 return true;
             } catch (\Throwable $exception) {
@@ -173,6 +177,46 @@ final class AdminResource
         return array_map('intval', $statement->fetchAll(PDO::FETCH_COLUMN));
     }
 
+    /** @return list<int> */
+    public function effectiveUserPermissionIds(int $userId): array
+    {
+        $statement = $this->db->prepare(
+            'SELECT p.id, rp.permiso_id AS role_permission_id, up.permitido
+             FROM usuarios u
+             CROSS JOIN permisos p
+             LEFT JOIN rol_permisos rp ON rp.rol_id = u.rol_id AND rp.permiso_id = p.id
+             LEFT JOIN usuario_permisos up ON up.usuario_id = u.id AND up.permiso_id = p.id
+             WHERE u.id = :id'
+        );
+        $statement->execute(['id' => $userId]);
+        $ids = [];
+        foreach ($statement->fetchAll() as $row) {
+            $granted = $row['permitido'] !== null ? (int) $row['permitido'] === 1 : $row['role_permission_id'] !== null;
+            if ($granted) { $ids[] = (int) $row['id']; }
+        }
+        return $ids;
+    }
+
+    /** Save only deviations from the user's role, so inherited permissions remain dynamic. @param list<int> $permissionIds */
+    private function syncUserPermissions(int $userId, array $permissionIds): void
+    {
+        $selected = array_fill_keys(array_unique($permissionIds), true);
+        $role = $this->db->prepare('SELECT rol_id FROM usuarios WHERE id = :id');
+        $role->execute(['id' => $userId]);
+        $roleId = (int) $role->fetchColumn();
+        $roleIds = array_fill_keys($this->rolePermissionIds($roleId), true);
+        $remove = $this->db->prepare('DELETE FROM usuario_permisos WHERE usuario_id = :id');
+        $remove->execute(['id' => $userId]);
+        $insert = $this->db->prepare('INSERT INTO usuario_permisos (usuario_id, permiso_id, permitido) VALUES (:usuario, :permiso, :permitido)');
+        foreach (array_unique(array_merge(array_keys($selected), array_keys($roleIds))) as $permissionId) {
+            $hasRoleGrant = isset($roleIds[$permissionId]);
+            $isSelected = isset($selected[$permissionId]);
+            if ($hasRoleGrant !== $isSelected) {
+                $insert->execute(['usuario' => $userId, 'permiso' => $permissionId, 'permitido' => $isSelected ? 1 : 0]);
+            }
+        }
+    }
+
     public function setActive(int $id, bool $active): bool
     {
         $column = $this->definition['active_column'] ?? null;
@@ -205,10 +249,12 @@ final class AdminResource
         $target = $this->db->prepare(
             "SELECT COUNT(*) FROM usuarios u
              INNER JOIN roles r ON r.id = u.rol_id
-             INNER JOIN rol_permisos rp ON rp.rol_id = r.id
-             INNER JOIN permisos p ON p.id = rp.permiso_id
+             INNER JOIN permisos p ON p.codigo = 'roles.asignar_permisos'
+             LEFT JOIN rol_permisos rp ON rp.rol_id = r.id AND rp.permiso_id = p.id
+             LEFT JOIN usuario_permisos up ON up.usuario_id = u.id AND up.permiso_id = p.id
              WHERE u.id = :id AND u.activo = 1 AND r.activo = 1
-               AND p.codigo = 'roles.asignar_permisos'"
+               AND ((up.usuario_id IS NOT NULL AND up.permitido = 1)
+                 OR (up.usuario_id IS NULL AND rp.permiso_id IS NOT NULL))"
         );
         $target->execute(['id' => $id]);
         if ((int) $target->fetchColumn() === 0) {
@@ -217,10 +263,12 @@ final class AdminResource
         $administrators = $this->db->query(
             "SELECT COUNT(DISTINCT u.id) FROM usuarios u
              INNER JOIN roles r ON r.id = u.rol_id
-             INNER JOIN rol_permisos rp ON rp.rol_id = r.id
-             INNER JOIN permisos p ON p.id = rp.permiso_id
+             INNER JOIN permisos p ON p.codigo = 'roles.asignar_permisos'
+             LEFT JOIN rol_permisos rp ON rp.rol_id = r.id AND rp.permiso_id = p.id
+             LEFT JOIN usuario_permisos up ON up.usuario_id = u.id AND up.permiso_id = p.id
              WHERE u.activo = 1 AND r.activo = 1
-               AND p.codigo = 'roles.asignar_permisos'"
+               AND ((up.usuario_id IS NOT NULL AND up.permitido = 1)
+                 OR (up.usuario_id IS NULL AND rp.permiso_id IS NOT NULL))"
         );
         return (int) $administrators->fetchColumn() <= 1;
     }
