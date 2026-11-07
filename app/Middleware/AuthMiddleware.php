@@ -89,7 +89,7 @@ final class AuthMiddleware
         if ($path === '/') {
             return ['dashboard.ver'];
         }
-        $modules = ['productos', 'ventas', 'compras', 'categorias', 'clientes', 'lotes', 'marcas', 'usuarios', 'roles', 'proveedores'];
+        $modules = ['productos', 'ventas', 'compras', 'existencias', 'movimientos', 'alertas', 'auditoria', 'categorias', 'clientes', 'lotes', 'marcas', 'usuarios', 'roles', 'proveedores'];
         $parts = explode('/', trim($path, '/'));
         $module = $parts[0] ?? '';
         if (!in_array($module, $modules, true)) {
@@ -100,6 +100,7 @@ final class AuthMiddleware
             $permissionAction = match ($action) {
                 'nuevo', 'nueva', 'crear' => 'crear',
                 'detalle' => 'ver',
+                'ajustar' => 'ajustar',
                 'editar' => 'editar',
                 default => 'ver',
             };
@@ -111,6 +112,9 @@ final class AuthMiddleware
                 'desactivar' => 'desactivar',
                 'eliminar' => 'eliminar',
                 'anular' => 'anular',
+                'ajustar' => 'ajustar',
+                'atender' => 'atender',
+                'descartar' => 'descartar',
                 default => 'ver',
             };
         }

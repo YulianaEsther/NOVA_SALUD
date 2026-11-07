@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Core\Database;
+use App\Core\AuditLogger;
 use PDO;
 use RuntimeException;
 
@@ -133,6 +134,7 @@ final class Sale
             }
             $updateTotal = $this->db->prepare('UPDATE ventas SET total=:total WHERE id=:id');
             $updateTotal->execute(['total' => number_format($total, 2, '.', ''), 'id' => $saleId]);
+            AuditLogger::record($this->db, $userId, 'crear', 'venta', $saleId, ['total' => number_format($total, 2, '.', ''), 'lineas' => count($items)]);
             $this->db->commit();
             return $saleId;
         } catch (\Throwable $exception) {
@@ -160,6 +162,7 @@ final class Sale
             }
             $mark = $this->db->prepare("UPDATE ventas SET estado='anulada' WHERE id=:id");
             $mark->execute(['id' => $id]);
+            AuditLogger::record($this->db, $userId, 'anular', 'venta', $id, ['lineas' => count($lines)]);
             $this->db->commit();
             return true;
         } catch (\Throwable $exception) {

@@ -18,6 +18,19 @@ INSERT IGNORE INTO permisos (codigo, descripcion) VALUES
 ('ventas.ver', 'Consultar ventas'), ('ventas.crear', 'Registrar ventas'),
 ('ventas.anular', 'Anular ventas y restaurar existencias'), ('ventas.descuento', 'Autorizar descuentos sobre el precio de venta');
 
+INSERT IGNORE INTO permisos (codigo, descripcion) VALUES
+('existencias.ver', 'Consultar existencias por lote'),
+('existencias.ajustar', 'Registrar ajustes de entrada o salida en lotes');
+
+INSERT IGNORE INTO permisos (codigo, descripcion) VALUES
+('movimientos.ver', 'Consultar el historial de movimientos de inventario');
+
+INSERT IGNORE INTO permisos (codigo, descripcion) VALUES
+('alertas.ver', 'Consultar alertas de inventario'),
+('alertas.atender', 'Marcar alertas como atendidas'),
+('alertas.descartar', 'Descartar alertas de inventario'),
+('auditoria.ver', 'Consultar el historial de auditoría');
+
 INSERT IGNORE INTO roles (nombre, descripcion, activo)
 VALUES ('Administrador', 'Rol inicial con acceso completo, ajusta sus permisos según la operación.', 1);
 

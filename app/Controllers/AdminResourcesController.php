@@ -4,6 +4,8 @@ declare(strict_types=1);
 namespace App\Controllers;
 
 use App\Models\AdminResource;
+use App\Core\AuditLogger;
+use App\Core\Database;
 use PDOException;
 
 final class AdminResourcesController
@@ -88,6 +90,8 @@ final class AdminResourcesController
         }
         try {
             $model->create($data, $permissionIds);
+            $entityId = (int) Database::connection()->lastInsertId();
+            AuditLogger::record(Database::connection(), (int) ($_SESSION['auth_user_id'] ?? 0), 'crear', $slug, $entityId ?: null, ['campos' => array_values(array_diff(array_keys($data), ['password_hash']))]);
             \flash('success', $definition['title'] . ' registrado correctamente.');
             $this->redirect('/' . $slug);
         } catch (PDOException $exception) {
@@ -127,6 +131,7 @@ final class AdminResourcesController
         }
         try {
             $model->update($id, $data, in_array($slug, ['roles', 'usuarios'], true) ? $permissionIds : null);
+            AuditLogger::record(Database::connection(), (int) ($_SESSION['auth_user_id'] ?? 0), 'editar', $slug, $id, ['campos' => array_values(array_diff(array_keys($data), ['password_hash']))] + (in_array($slug, ['roles', 'usuarios'], true) ? ['permisos_asignados' => count($permissionIds)] : []));
             \flash('success', $definition['title'] . ' actualizado correctamente.');
             $this->redirect('/' . $slug);
         } catch (PDOException $exception) {
@@ -172,6 +177,7 @@ final class AdminResourcesController
             $this->notFound($definition);
             return;
         }
+        AuditLogger::record(Database::connection(), (int) ($_SESSION['auth_user_id'] ?? 0), $active ? 'activar' : 'desactivar', $slug, $id);
         \flash('success', $definition['title'] . ($active ? ' activado.' : ' desactivado.'));
         $this->redirect('/' . $slug);
     }
@@ -190,6 +196,7 @@ final class AdminResourcesController
         if (!$model->deleteLotIfUnused($id)) {
             \flash('error', 'No se puede eliminar: el lote tiene existencias o está relacionado con compras, ventas o movimientos.');
         } else {
+            AuditLogger::record(Database::connection(), (int) ($_SESSION['auth_user_id'] ?? 0), 'eliminar', 'lotes', $id);
             \flash('success', 'Lote eliminado porque aún no tenía movimientos ni existencias.');
         }
         $this->redirect('/lotes');

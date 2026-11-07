@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace App\Controllers;
 
 use App\Core\Database;
+use App\Core\AuditLogger;
 use PDO;
 
 final class AuthController
@@ -69,6 +70,7 @@ final class AuthController
         $_SESSION['role_id'] = (int) $user['rol_id'];
         $_SESSION['auth_name'] = trim($user['nombres'] . ' ' . $user['apellidos']);
         $_SESSION['auth_last_activity'] = time();
+        AuditLogger::record($db, (int) $user['id'], 'iniciar_sesion', 'usuario', (int) $user['id']);
         unset($_SESSION['permissions']);
         $target = $_SESSION['intended_path'] ?? '/';
         unset($_SESSION['intended_path']);
@@ -84,6 +86,10 @@ final class AuthController
             http_response_code(419);
             echo 'El formulario venció. Recarga la página.';
             return;
+        }
+        $userId = filter_var($_SESSION['auth_user_id'] ?? null, FILTER_VALIDATE_INT);
+        if ($userId !== false && $userId !== null) {
+            AuditLogger::record(Database::connection(), (int) $userId, 'cerrar_sesion', 'usuario', (int) $userId);
         }
         $_SESSION = [];
         if (ini_get('session.use_cookies')) {

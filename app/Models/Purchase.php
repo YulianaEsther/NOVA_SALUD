@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Core\Database;
+use App\Core\AuditLogger;
 use PDO;
 use RuntimeException;
 
@@ -34,7 +35,13 @@ final class Purchase
 
     public function products(): array
     {
-        return $this->db->query('SELECT id, codigo, nombre, unidad_medida FROM productos WHERE activo = 1 ORDER BY nombre')->fetchAll();
+        return $this->db->query(
+            'SELECT p.id, p.codigo, p.nombre, p.unidad_medida,
+                    COALESCE((SELECT SUM(e.cantidad_disponible)
+                              FROM lotes l JOIN existencias_lote e ON e.lote_id=l.id
+                              WHERE l.producto_id=p.id), 0) AS stock_actual
+             FROM productos p WHERE p.activo=1 ORDER BY p.nombre'
+        )->fetchAll();
     }
 
     public function find(int $id): ?array
@@ -79,6 +86,7 @@ final class Purchase
             }
             $update = $this->db->prepare('UPDATE compras SET total=:total WHERE id=:id');
             $update->execute(['total' => number_format($total, 2, '.', ''), 'id' => $purchaseId]);
+            AuditLogger::record($this->db, $userId, 'crear', 'compra', $purchaseId, ['total' => number_format($total, 2, '.', ''), 'lineas' => count($items)]);
             $this->db->commit();
             return $purchaseId;
         } catch (\Throwable $exception) {
@@ -108,6 +116,7 @@ final class Purchase
                 $movement = $this->db->prepare("INSERT INTO movimientos_inventario (producto_id, lote_id, usuario_id, compra_id, tipo, cantidad_delta, motivo) SELECT :producto, :lote, :usuario, :compra, 'anulacion', -dc.cantidad, 'Anulación de compra' FROM detalle_compras dc WHERE dc.compra_id=:compra AND dc.lote_id=:lote");
                 $movement->execute(['producto' => $lot['producto_id'], 'lote' => $lot['id'], 'usuario' => $userId, 'compra' => $id]);
             }
+            AuditLogger::record($this->db, $userId, 'anular', 'compra', $id, ['lotes' => count($lots)]);
             $this->db->commit();
             return true;
         } catch (\Throwable $exception) {

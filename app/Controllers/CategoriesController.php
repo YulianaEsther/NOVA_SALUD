@@ -4,6 +4,8 @@ declare(strict_types=1);
 namespace App\Controllers;
 
 use App\Models\Category;
+use App\Core\AuditLogger;
+use App\Core\Database;
 use PDOException;
 
 final class CategoriesController
@@ -56,6 +58,8 @@ final class CategoriesController
 
         try {
             $this->categories->create($data);
+            $db = Database::connection();
+            AuditLogger::record($db, (int) ($_SESSION['auth_user_id'] ?? 0), 'crear', 'categorias', (int) $db->lastInsertId(), ['nombre' => $data['nombre']]);
             \flash('success', 'Categoría registrada correctamente.');
             $this->redirect('/categorias');
         } catch (PDOException $exception) {
@@ -89,6 +93,7 @@ final class CategoriesController
 
         try {
             $this->categories->update($id, $data);
+            AuditLogger::record(Database::connection(), (int) ($_SESSION['auth_user_id'] ?? 0), 'editar', 'categorias', $id, ['campos' => array_keys($data)]);
             \flash('success', 'Categoría actualizada correctamente.');
             $this->redirect('/categorias');
         } catch (PDOException $exception) {
@@ -121,6 +126,7 @@ final class CategoriesController
             $this->notFound();
             return;
         }
+        AuditLogger::record(Database::connection(), (int) ($_SESSION['auth_user_id'] ?? 0), $active ? 'activar' : 'desactivar', 'categorias', $id);
         \flash('success', $active ? 'Categoría activada.' : 'Categoría desactivada. Los productos asociados se conservaron.');
         $this->redirect('/categorias');
     }

@@ -5,6 +5,10 @@ use App\Controllers\HomeController;
 use App\Controllers\CategoriesController;
 use App\Controllers\PurchasesController;
 use App\Controllers\SalesController;
+use App\Controllers\StockController;
+use App\Controllers\MovementsController;
+use App\Controllers\AlertsController;
+use App\Controllers\AuditController;
 use App\Controllers\AdminResourcesController;
 use App\Controllers\AuthController;
 use App\Controllers\InitialSetupController;
@@ -17,6 +21,10 @@ return static function (Router $router): void {
     $products = new ProductsController();
     $purchases = new PurchasesController();
     $sales = new SalesController();
+    $stock = new StockController();
+    $movements = new MovementsController();
+    $alerts = new AlertsController();
+    $audit = new AuditController();
     $adminResources = new AdminResourcesController();
     $auth = new AuthController();
     $initialSetup = new InitialSetupController();
@@ -49,6 +57,14 @@ return static function (Router $router): void {
     $router->post('/ventas/crear', [$sales, 'store']);
     $router->get('/ventas/detalle', [$sales, 'show']);
     $router->post('/ventas/anular', [$sales, 'cancel']);
+    $router->get('/existencias', [$stock, 'index']);
+    $router->get('/existencias/ajustar', [$stock, 'adjustForm']);
+    $router->post('/existencias/ajustar', [$stock, 'adjust']);
+    $router->get('/movimientos', [$movements, 'index']);
+    $router->get('/alertas', [$alerts, 'index']);
+    $router->post('/alertas/atender', [$alerts, 'attend']);
+    $router->post('/alertas/descartar', [$alerts, 'dismiss']);
+    $router->get('/auditoria', [$audit, 'index']);
 
     foreach (['clientes', 'lotes', 'marcas', 'usuarios', 'roles', 'proveedores'] as $slug) {
         $router->get('/' . $slug, static fn () => $adminResources->index($slug));

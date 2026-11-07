@@ -4,6 +4,8 @@ declare(strict_types=1);
 namespace App\Controllers;
 
 use App\Models\Product;
+use App\Core\AuditLogger;
+use App\Core\Database;
 use PDOException;
 
 final class ProductsController
@@ -62,6 +64,8 @@ final class ProductsController
 
         try {
             $this->products->create($data);
+            $db = Database::connection();
+            AuditLogger::record($db, (int) ($_SESSION['auth_user_id'] ?? 0), 'crear', 'productos', (int) $db->lastInsertId(), ['codigo' => $data['codigo'], 'nombre' => $data['nombre']]);
             \flash('success', 'Producto registrado correctamente.');
             $this->redirect('/productos');
         } catch (PDOException $exception) {
@@ -96,6 +100,7 @@ final class ProductsController
 
         try {
             $this->products->update($id, $data);
+            AuditLogger::record(Database::connection(), (int) ($_SESSION['auth_user_id'] ?? 0), 'editar', 'productos', $id, ['campos' => array_keys($data)]);
             \flash('success', 'Producto actualizado correctamente.');
             $this->redirect('/productos');
         } catch (PDOException $exception) {
@@ -119,6 +124,7 @@ final class ProductsController
             $this->notFound();
             return;
         }
+        AuditLogger::record(Database::connection(), (int) ($_SESSION['auth_user_id'] ?? 0), 'desactivar', 'productos', $id);
         \flash('success', 'Producto desactivado. Se conservó su historial.');
         $this->redirect('/productos');
     }
