@@ -222,6 +222,7 @@ CREATE TABLE IF NOT EXISTS detalle_ventas (
     lote_id BIGINT UNSIGNED NOT NULL,
     cantidad DECIMAL(12,3) NOT NULL,
     precio_unitario DECIMAL(12,2) NOT NULL,
+    descuento_unitario DECIMAL(12,2) NOT NULL DEFAULT 0,
     subtotal DECIMAL(14,2) NOT NULL,
     PRIMARY KEY (id),
     KEY idx_detalle_ventas_venta (venta_id),
@@ -230,6 +231,7 @@ CREATE TABLE IF NOT EXISTS detalle_ventas (
     CONSTRAINT fk_detalle_ventas_lote FOREIGN KEY (lote_id) REFERENCES lotes (id),
     CONSTRAINT chk_detalle_ventas_cantidad CHECK (cantidad > 0),
     CONSTRAINT chk_detalle_ventas_precio CHECK (precio_unitario >= 0),
+    CONSTRAINT chk_detalle_ventas_descuento CHECK (descuento_unitario >= 0),
     CONSTRAINT chk_detalle_ventas_subtotal CHECK (subtotal >= 0)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 

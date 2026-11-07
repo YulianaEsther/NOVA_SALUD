@@ -4,6 +4,7 @@ declare(strict_types=1);
 use App\Controllers\HomeController;
 use App\Controllers\CategoriesController;
 use App\Controllers\PurchasesController;
+use App\Controllers\SalesController;
 use App\Controllers\AdminResourcesController;
 use App\Controllers\AuthController;
 use App\Controllers\InitialSetupController;
@@ -15,6 +16,7 @@ return static function (Router $router): void {
     $categories = new CategoriesController();
     $products = new ProductsController();
     $purchases = new PurchasesController();
+    $sales = new SalesController();
     $adminResources = new AdminResourcesController();
     $auth = new AuthController();
     $initialSetup = new InitialSetupController();
@@ -42,6 +44,11 @@ return static function (Router $router): void {
     $router->post('/compras/crear', [$purchases, 'store']);
     $router->get('/compras/detalle', [$purchases, 'show']);
     $router->post('/compras/anular', [$purchases, 'cancel']);
+    $router->get('/ventas', [$sales, 'index']);
+    $router->get('/ventas/nueva', [$sales, 'createForm']);
+    $router->post('/ventas/crear', [$sales, 'store']);
+    $router->get('/ventas/detalle', [$sales, 'show']);
+    $router->post('/ventas/anular', [$sales, 'cancel']);
 
     foreach (['clientes', 'lotes', 'marcas', 'usuarios', 'roles', 'proveedores'] as $slug) {
         $router->get('/' . $slug, static fn () => $adminResources->index($slug));

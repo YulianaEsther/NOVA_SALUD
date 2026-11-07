@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 $modules = [
-    'productos' => 'Productos', 'categorias' => 'Categorías', 'clientes' => 'Clientes',
+    'productos' => 'Productos', 'ventas' => 'Ventas', 'compras' => 'Compras', 'categorias' => 'Categorías', 'clientes' => 'Clientes',
     'proveedores' => 'Proveedores', 'marcas' => 'Marcas', 'lotes' => 'Lotes',
     'usuarios' => 'Usuarios', 'roles' => 'Roles',
 ];

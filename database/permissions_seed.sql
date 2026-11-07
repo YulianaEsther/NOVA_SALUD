@@ -14,6 +14,10 @@ INSERT IGNORE INTO permisos (codigo, descripcion) VALUES
 INSERT IGNORE INTO permisos (codigo, descripcion) VALUES
 ('compras.ver', 'Consultar compras'), ('compras.crear', 'Registrar compras'), ('compras.anular', 'Anular compras y revertir su stock');
 
+INSERT IGNORE INTO permisos (codigo, descripcion) VALUES
+('ventas.ver', 'Consultar ventas'), ('ventas.crear', 'Registrar ventas'),
+('ventas.anular', 'Anular ventas y restaurar existencias'), ('ventas.descuento', 'Autorizar descuentos sobre el precio de venta');
+
 INSERT IGNORE INTO roles (nombre, descripcion, activo)
 VALUES ('Administrador', 'Rol inicial con acceso completo, ajusta sus permisos según la operación.', 1);
 

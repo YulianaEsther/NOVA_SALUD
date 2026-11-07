@@ -89,7 +89,7 @@ final class AuthMiddleware
         if ($path === '/') {
             return ['dashboard.ver'];
         }
-        $modules = ['productos', 'compras', 'categorias', 'clientes', 'lotes', 'marcas', 'usuarios', 'roles', 'proveedores'];
+        $modules = ['productos', 'ventas', 'compras', 'categorias', 'clientes', 'lotes', 'marcas', 'usuarios', 'roles', 'proveedores'];
         $parts = explode('/', trim($path, '/'));
         $module = $parts[0] ?? '';
         if (!in_array($module, $modules, true)) {
