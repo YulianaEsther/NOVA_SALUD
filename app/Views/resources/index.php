@@ -9,7 +9,7 @@ $title = $definition['title'];
             <h1 class="mt-1 text-3xl font-bold tracking-tight text-slate-900"><?= e($definition['title']) ?></h1>
             <p class="mt-2 text-sm text-slate-600">Consulta y administra los registros.</p>
         </div>
-        <a href="<?= e($baseUrl) ?>/<?= e($slug) ?>/nuevo" class="inline-flex min-h-11 items-center justify-center rounded-lg bg-emerald-700 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-emerald-800 focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:ring-offset-2">Nuevo registro</a>
+        <?php if (can($slug . '.crear')): ?><a href="<?= e($baseUrl) ?>/<?= e($slug) ?>/nuevo" class="inline-flex min-h-11 items-center justify-center rounded-lg bg-emerald-700 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-emerald-800 focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:ring-offset-2">Nuevo registro</a><?php endif; ?>
     </div>
 
     <?php if ($success): ?><div role="status" class="mb-5 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-900"><?= e($success) ?></div><?php endif; ?>

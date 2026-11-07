@@ -9,7 +9,7 @@ $title = 'Categorías';
             <h1 class="mt-1 text-3xl font-bold tracking-tight text-slate-900">Categorías</h1>
             <p class="mt-2 text-sm text-slate-600">Organiza los productos por categorías.</p>
         </div>
-        <a href="<?= e($baseUrl) ?>/categorias/nueva" class="inline-flex min-h-11 items-center justify-center rounded-lg bg-emerald-700 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-emerald-800 focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:ring-offset-2">Registrar categoría</a>
+        <?php if (can('categorias.crear')): ?><a href="<?= e($baseUrl) ?>/categorias/nueva" class="inline-flex min-h-11 items-center justify-center rounded-lg bg-emerald-700 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-emerald-800 focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:ring-offset-2">Registrar categoría</a><?php endif; ?>
     </div>
 
     <?php if ($success): ?><div role="status" class="mb-5 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-900"><?= e($success) ?></div><?php endif; ?>

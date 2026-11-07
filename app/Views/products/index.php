@@ -9,7 +9,7 @@ $title = 'Productos';
             <h1 class="mt-1 text-3xl font-bold tracking-tight text-slate-900">Productos</h1>
             <p class="mt-2 text-sm text-slate-600">Administra el catálogo de productos de NOVA SALUD.</p>
         </div>
-        <a href="<?= e($baseUrl) ?>/productos/nuevo" class="inline-flex min-h-11 items-center justify-center rounded-lg bg-emerald-700 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-emerald-800 focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:ring-offset-2">Registrar producto</a>
+        <?php if (can('productos.crear')): ?><a href="<?= e($baseUrl) ?>/productos/nuevo" class="inline-flex min-h-11 items-center justify-center rounded-lg bg-emerald-700 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-emerald-800 focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:ring-offset-2">Registrar producto</a><?php endif; ?>
     </div>
 
     <?php if ($success): ?>
