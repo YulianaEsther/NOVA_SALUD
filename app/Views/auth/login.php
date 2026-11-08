@@ -12,7 +12,6 @@ declare(strict_types=1);
 <body class="flex min-h-screen items-center justify-center bg-slate-50 px-4 py-10 text-slate-800">
     <main class="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
         <div class="mb-7 text-center">
-            <div class="mx-auto flex size-12 items-center justify-center rounded-xl bg-emerald-100 text-xl font-bold text-emerald-800">N</div>
             <h1 class="mt-4 text-2xl font-bold text-slate-900"><?= e($app['name']) ?></h1>
             <p class="mt-1 text-sm text-slate-600">Ingresa con tu usuario o correo y contraseña.</p>
         </div>
