@@ -42,6 +42,30 @@ $moduleLabels = [
     'roles' => 'Roles',
     'auditoria' => 'Auditoría',
 ];
+$moduleIcons = [
+    'dashboard' => '<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>',
+    'productos' => '<path d="m12 3 8 4.5v9L12 21l-8-4.5v-9L12 3Z"/><path d="m4.5 7.8 7.5 4.3 7.5-4.3M12 12v9"/>',
+    'existencias' => '<path d="M4 19V9m5 10V5m6 14v-7m5 7V8"/><path d="M2 19h20"/>',
+    'movimientos' => '<path d="M4 7h15l-3-3m4 13H5l3 3"/><path d="M19 7a7 7 0 0 1 1 9M5 17a7 7 0 0 1-1-9"/>',
+    'alertas' => '<path d="M10.3 4.3 2.8 17.2A2 2 0 0 0 4.5 20h15a2 2 0 0 0 1.7-2.8L13.7 4.3a2 2 0 0 0-3.4 0Z"/><path d="M12 9v4m0 3h.01"/>',
+    'lotes' => '<path d="m12 3 8 4.5v9L12 21l-8-4.5v-9L12 3Z"/><path d="m4.5 7.8 7.5 4.3 7.5-4.3M12 12v9m-3-14 8 4.5"/>',
+    'ventas' => '<path d="M3 3h2l2.4 12.2a2 2 0 0 0 2 1.6h8.8a2 2 0 0 0 2-1.6L22 8H6"/><circle cx="10" cy="20" r="1"/><circle cx="18" cy="20" r="1"/>',
+    'compras' => '<path d="M4 4h16v16H4z"/><path d="M8 8h8m-8 4h8m-8 4h5"/>',
+    'clientes' => '<path d="M16 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="10" cy="7" r="4"/><path d="M20 21v-2a4 4 0 0 0-3-3.9m-1-11.9a4 4 0 0 1 0 7.8"/>',
+    'proveedores' => '<path d="M3 7h11v11H3z"/><path d="M14 11h4l3 3v4h-7"/><circle cx="7.5" cy="18.5" r="1.5"/><circle cx="17.5" cy="18.5" r="1.5"/>',
+    'categorias' => '<path d="M3 5.5A2.5 2.5 0 0 1 5.5 3H11l10 10-8 8L3 11V5.5Z"/><circle cx="7.5" cy="7.5" r="1"/>',
+    'marcas' => '<path d="M12 3 14.8 9l6.2.8-4.5 4.3 1.1 6.2L12 17.4l-5.6 2.9 1.1-6.2L3 9.8 9.2 9 12 3Z"/>',
+    'usuarios' => '<path d="M16 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="10" cy="7" r="4"/><path d="M20 8v6m-3-3h6"/>',
+    'roles' => '<path d="M12 3 20 6v5c0 5-3.4 8.3-8 10-4.6-1.7-8-5-8-10V6l8-3Z"/><path d="m9 12 2 2 4-4"/>',
+    'auditoria' => '<path d="M3 3v5h5M4 8a8 8 0 1 1-1 6"/><path d="M12 7v5l3 2"/>',
+];
+$renderModuleIcon = static function (string $slug) use ($moduleIcons): void {
+    ?>
+    <svg class="sidebar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+        <?= $moduleIcons[$slug] ?? $moduleIcons['dashboard'] ?>
+    </svg>
+    <?php
+};
 $requestPath = (string) (parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/');
 $basePath = (string) (parse_url($baseUrl, PHP_URL_PATH) ?: '');
 if ($basePath !== '' && str_starts_with($requestPath, $basePath)) {
@@ -52,7 +76,7 @@ $activeModule = $pathParts[0] ?? '';
 $moduleTitle = $activeModule === ''
     ? 'Panel de control'
     : ($moduleLabels[$activeModule] ?? (string) ($title ?? 'Panel de control'));
-$renderNavigation = static function () use ($navigation, $baseUrl, $activeModule): void {
+$renderNavigation = static function () use ($navigation, $baseUrl, $activeModule, $renderModuleIcon): void {
     foreach ($navigation as $group => $modules) {
         $visibleModules = array_filter($modules, static fn (string $slug): bool => can($slug . '.ver'), ARRAY_FILTER_USE_KEY);
         if ($visibleModules === []) {
@@ -63,7 +87,7 @@ $renderNavigation = static function () use ($navigation, $baseUrl, $activeModule
             <p class="sidebar-group-title"><?= e($group) ?></p>
             <?php foreach ($visibleModules as $slug => $label): ?>
                 <a class="sidebar-link<?= $activeModule === $slug ? ' is-active' : '' ?>" href="<?= e($baseUrl) ?>/<?= e($slug) ?>"<?= $activeModule === $slug ? ' aria-current="page"' : '' ?>>
-                    <span class="sidebar-link-mark" aria-hidden="true"></span>
+                    <?php $renderModuleIcon($slug); ?>
                     <span><?= e($label) ?></span>
                 </a>
             <?php endforeach; ?>
@@ -95,7 +119,7 @@ $renderNavigation = static function () use ($navigation, $baseUrl, $activeModule
             </span>
         </a>
         <a class="sidebar-home<?= $activeModule === '' ? ' is-active' : '' ?>" href="<?= e($baseUrl) ?>/">
-            <span class="sidebar-link-mark" aria-hidden="true"></span>
+            <?php $renderModuleIcon('dashboard'); ?>
             <span>Panel de control</span>
         </a>
         <nav class="sidebar-navigation" aria-label="Módulos">
@@ -132,7 +156,10 @@ $renderNavigation = static function () use ($navigation, $baseUrl, $activeModule
                     <span>Menú</span>
                 </summary>
                 <nav class="mobile-menu-panel" aria-label="Módulos">
-                    <a class="sidebar-link<?= $activeModule === '' ? ' is-active' : '' ?>" href="<?= e($baseUrl) ?>/">Panel de control</a>
+                    <a class="sidebar-link<?= $activeModule === '' ? ' is-active' : '' ?>" href="<?= e($baseUrl) ?>/">
+                        <?php $renderModuleIcon('dashboard'); ?>
+                        <span>Panel de control</span>
+                    </a>
                     <?php $renderNavigation(); ?>
                     <form method="post" action="<?= e($baseUrl) ?>/logout">
                         <input type="hidden" name="_csrf" value="<?= e(csrf_token()) ?>">
