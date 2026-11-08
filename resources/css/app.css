@@ -4,44 +4,30 @@
 
 @layer components {
   .login-shell {
-    display: flex;
-    min-height: 100vh;
-    min-height: 100svh;
-    align-items: center;
-    justify-content: center;
-    padding: clamp(1rem, 4vh, 2.5rem) clamp(1rem, 4vw, 2rem);
+    background: #fff;
   }
 
-  .login-card {
-    width: min(100%, 28rem);
-    padding: clamp(1.25rem, 5vw, 2rem);
-  }
-}
-
-@media (max-height: 34rem) {
-  .login-shell {
-    align-items: flex-start;
-  }
-}
-
-@layer components {
-  .login-shell {
-    display: flex;
-    min-height: 100vh;
-    min-height: 100svh;
-    align-items: center;
-    justify-content: center;
-    padding: clamp(1rem, 4vh, 2.5rem) clamp(1rem, 4vw, 2rem);
+  .login-visual {
+    background-color: #064e3b;
+    background-image:
+      radial-gradient(ellipse at 18% 18%, rgb(16 185 129 / 28%), transparent 42%),
+      radial-gradient(ellipse at 85% 82%, rgb(20 184 166 / 18%), transparent 38%),
+      linear-gradient(145deg, #064e3b 0%, #065f46 52%, #0f766e 100%);
   }
 
-  .login-card {
-    width: min(100%, 28rem);
-    padding: clamp(1.25rem, 5vw, 2rem);
+  .login-visual::before {
+    position: absolute;
+    inset: 0;
+    background-image: radial-gradient(rgb(255 255 255 / 13%) 1px, transparent 1px);
+    background-size: 28px 28px;
+    content: "";
+    mask-image: linear-gradient(135deg, #000 0%, transparent 75%);
+    pointer-events: none;
   }
-}
 
-@media (max-height: 34rem) {
-  .login-shell {
-    align-items: flex-start;
+  @media (max-width: 1023px) {
+    .login-layout {
+      align-content: center;
+    }
   }
 }
